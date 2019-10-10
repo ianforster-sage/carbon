@@ -7,7 +7,8 @@ import { dlsThemeSelector, classicThemeSelector } from '../../../.storybook/them
 import OptionsHelper from '../../utils/helpers/options-helper';
 import ShowEditPod from './show-edit-pod';
 import Content from '../content';
-import Textbox from '../../__deprecated__/components/textbox';
+import Textbox from '../../__experimental__/components/textbox';
+import Fieldset from '../../__experimental__/components/fieldset';
 import { notes, info } from './documentation';
 import getDocGenInfo from '../../utils/helpers/docgen-info';
 
@@ -52,20 +53,31 @@ function makeStory(name, themeSelector) {
     const title = text('title', 'Person');
     const transitionName = text('transitionName', ShowEditPod.defaultProps.transitionName);
     const validateOnMount = boolean('validateOnMount', ShowEditPod.defaultProps.validateOnMount);
-    const editFields = [
-      <Textbox
-        key='edit_first_name' label='First Name'
-        value='Alan'
-      />,
-      <Textbox
-        key='edit_second_name' label='Second Name'
-        value='Smith'
-      />,
-      <Textbox
-        key='edit_telephone' label='Telephone'
-        value='000 000 0000'
-      />
-    ];
+    const editFields = (
+      <Fieldset>
+        <Textbox
+          key='edit_first_name'
+          labelInline
+          labelAlign='right'
+          label='First Name'
+          value='Alan'
+        />
+        <Textbox
+          key='edit_second_name'
+          labelInline
+          labelAlign='right'
+          label='Second Name'
+          value='Smith'
+        />
+        <Textbox
+          key='edit_telephone'
+          labelInline
+          labelAlign='right'
+          label='Telephone'
+          value='000 000 0000'
+        />
+      </Fieldset>
+    );
 
     return (
       <State store={ store }>

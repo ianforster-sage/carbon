@@ -2,17 +2,28 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import I18n from 'i18n-js';
-import Icon from '../../../components/icon';
-import Link from '../../../components/link';
 import Event from '../../../utils/helpers/events';
 import { validProps } from '../../../utils/ether';
 import tagComponent from '../../../utils/helpers/tags';
-import warnOfDeprecation from '../../../utils/helpers/warn-as-deprecated';
+import {
+  StyledBlock,
+  StyledCollapsibleContent,
+  StyledContent,
+  StyledDescription,
+  StyledEditAction,
+  StyledEditContainer,
+  StyledFooter,
+  StyledPod,
+  StyledHeader,
+  StyledSubtitle,
+  StyledTitle,
+  StyledArrow
+} from './pod.style.js';
+
 import './pod.scss';
 
 class Pod extends React.Component {
   static propTypes = {
-
     /**
      * Enables/disables the border around the pod.
      */
@@ -53,10 +64,7 @@ class Pod extends React.Component {
      * Title for the pod h4 element
      * always shown
      */
-    title: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.object
-    ]),
+    title: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
 
     /**
      * Optional subtitle for the pod
@@ -77,19 +85,12 @@ class Pod extends React.Component {
     /**
      * A component to render as a Pod footer.
      */
-    footer: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.object
-    ]),
+    footer: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
 
     /**
      * Supplies an edit action to the pod.
      */
-    onEdit: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.func,
-      PropTypes.object
-    ]),
+    onEdit: PropTypes.oneOfType([PropTypes.string, PropTypes.func, PropTypes.object]),
 
     /**
      * Determines if the editable pod content should be full width.
@@ -111,263 +112,195 @@ class Pod extends React.Component {
      * Resets edit button styles to an older version
      */
     internalEditButton: PropTypes.bool
-  }
+  };
 
   static defaultProps = {
     border: true,
     as: 'primary',
     padding: 'medium',
     alignTitle: 'left'
-  }
+  };
 
-  deprecatedWarnTriggered = false;
+  state = {
+    collapsed: this.props.collapsed
+  };
 
-  /**
-   * A lifecycle called immediatly before initial render
-   * Sets the initial state of collasped
-   *
-   * @method componentWillMount
-   */
-  componentWillMount() {
-    this.setState({ collapsed: this.props.collapsed });
-  }
 
-  /**
-   * A lifecycle called immediatly before new props cause a re-render
-   * Resets the hover state if active
-   *
-   * @method componentWillReceiveProps
-   */
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     if (this.state.hoverEdit) {
       this.toggleHoverState(false);
     }
   }
 
-  /**
-   * Returns HTML and text for the pod header.
-   * Includes:
-   *    Title
-   *    Collapsible arrow if collapsible
-   *
-   * @method podHeader
-   */
   get podHeader() {
-    if (!this.props.title) { return null; }
-
-    const headerProps = {};
-    let pod, subtitle;
-
-    if (this.state.collapsed !== undefined) {
-      pod = this.podCollapsible;
-      headerProps.onClick = this.toggleCollapse;
+    if (!this.props.title) {
+      return null;
     }
 
-    headerProps.className = this.headerClasses;
+    const isCollapsable = this.state.collapsed !== undefined;
 
-    if (this.props.subtitle) {
-      subtitle = <h5 className='carbon-pod__subtitle' data-element='subtitle'>{ this.props.subtitle }</h5>;
-    }
+    // headerProps.className = this.headerClasses;
 
     return (
-      <div { ...headerProps }>
-        <h4 className='carbon-pod__title' data-element='title'>{ this.props.title }</h4>
-        { subtitle }
-        { pod }
-      </div>
+      <StyledHeader
+        className={ this.headerClasses }
+        alignTitle={ this.props.alignTitle }
+        internalEditButton={ this.props.internalEditButton }
+        padding={ this.props.padding }
+        isCollapsed={ this.state.collapsed }
+        onClick={ isCollapsable && this.toggleCollapse }
+      >
+        <StyledTitle className='carbon-pod__title' data-element='title'>
+          {this.props.title}
+        </StyledTitle>
+        {this.props.subtitle && (
+          <StyledSubtitle className='carbon-pod__subtitle' data-element='subtitle'>
+            {this.props.subtitle}
+          </StyledSubtitle>
+        )}
+        {isCollapsable && (
+          <StyledArrow
+            className={ `carbon-pod__arrow carbon-pod__arrow--${this.state.collapsed}` }
+            isCollapsed={ this.state.collapsed }
+          />
+        )}
+      </StyledHeader>
     );
   }
 
-  /**
-   * Returns HTML and text for the pod description.
-   *
-   * @method podDescription
-   */
   get podDescription() {
     if (this.props.description) {
-      return <div className='carbon-pod__description'>{ this.props.description }</div>;
+      return (
+        <StyledDescription data-element='description' className='carbon-pod__description'>
+          {this.props.description}
+        </StyledDescription>
+      );
     }
     return null;
   }
 
-  /**
-   * Returns the collapsible icon.
-   *
-   * @method podCollapsible
-   */
-  get podCollapsible() {
-    const className = `carbon-pod__arrow carbon-pod__arrow--${this.state.collapsed}`;
-
-    return (
-      <Icon type='dropdown' className={ className } />
-    );
-  }
-
-  /**
-   * Returns the pod description and children.
-   *
-   * @method podContent
-   */
   get podContent() {
     return (
-      <div className='carbon-pod__collapsible-content'>
-        { this.podDescription }
-        <div className='carbon-pod__content'>
-          { this.props.children }
-        </div>
-      </div>
+      <StyledCollapsibleContent className='carbon-pod__collapsible-content'>
+        {this.podDescription}
+        {/* <div className='carbon-pod__content'> */}
+        <div>{this.props.children}</div>
+      </StyledCollapsibleContent>
     );
   }
 
-
-  /**
-   * Toggles the opening and closing of the pod
-   *
-   * @method toggleCollapse
-   */
   toggleCollapse = () => {
     this.setState(prevState => ({ collapsed: !prevState.collapsed }));
-  }
+  };
 
-  get mainClasses() {
-    return classNames(
-      'carbon-pod', this.props.className,
-      `carbon-pod--${this.props.alignTitle}`, {
-        'carbon-pod--editable': this.props.onEdit,
-        'carbon-pod--is-hovered': this.state.hoverEdit,
-        'carbon-pod--content-triggers-edit': this.shouldContentHaveEditProps,
-        'carbon-pod--internal-edit-button': this.props.internalEditButton
-      }
+  // get mainClasses() {
+  //   return classNames('carbon-pod', this.props.className, `carbon-pod--${this.props.alignTitle}`, {
+  //     'carbon-pod--editable': this.props.onEdit,
+  //     'carbon-pod--is-hovered': this.state.hoverEdit,
+  //     'carbon-pod--content-triggers-edit': this.shouldContentHaveEditProps,
+  //     'carbon-pod--internal-edit-button': this.props.internalEditButton
+  //   });
+  // }
+
+  // get blockClasses() {
+  //   return classNames(
+  //     'carbon-pod__block',
+  //     `carbon-pod__block--padding-${this.props.padding}`,
+  //     `carbon-pod__block--${this.props.as}`,
+  //     {
+  //       'carbon-pod__block--no-border': !this.props.border,
+  //       'carbon-pod__block--full-width': this.props.editContentFullWidth,
+  //       'carbon-pod__block--footer': this.props.footer
+  //     }
+  //   );
+  // }
+
+  // get headerClasses() {
+  //   return classNames('carbon-pod__header', `carbon-pod__header--${this.props.alignTitle}`, {
+  //     [`carbon-pod__header--${this.state.collapsed}`]: this.state.collapsed !== undefined
+  //   });
+  // }
+
+  // get contentClasses() {
+  //   return classNames(
+  //     'carbon-pod__content',
+  //     `carbon-pod__content--${this.props.as}`,
+  //     `carbon-pod__content--padding-${this.props.padding}`,
+  //     {
+  //       'carbon-pod__content--footer': this.props.footer,
+  //       'carbon-pod--no-border': !this.props.border
+  //     }
+  //   );
+  // }
+
+  /**
+  //  */
+  // get footerClasses() {
+  //   return classNames(
+  //     'carbon-pod__footer',
+  //     `carbon-pod__footer--${this.props.as}`,
+  //     `carbon-pod__footer--padding-${this.props.padding}`, {
+  //       'carbon-pod--no-border': !this.props.border
+  //     }
+  //   );
+  // }
+
+  get footer() {
+    if (!this.props.footer) {
+      return null;
+    }
+
+    return (
+      <StyledFooter
+        // className={ this.footerClasses }
+        data-element='footer'
+        padding={ this.props.padding }
+      >
+        {this.props.footer}
+      </StyledFooter>
     );
   }
 
-  /**
-   * Main Class getter
-   *
-   * @method blockClasses
-   * @return {String} Main className
-   */
-  get blockClasses() {
-    return classNames(
-      'carbon-pod__block',
-      `carbon-pod__block--padding-${this.props.padding}`,
-      `carbon-pod__block--${this.props.as}`, {
-        'carbon-pod__block--no-border': !this.props.border,
-        'carbon-pod__block--full-width': this.props.editContentFullWidth,
-        'carbon-pod__block--footer': this.props.footer
-      }
-    );
-  }
-
-  /**
-   * Header classes getter
-   *
-   * @method headerClasses
-   * @return {String} header className
-   */
-  get headerClasses() {
-    return classNames(
-      'carbon-pod__header',
-      `carbon-pod__header--${this.props.alignTitle}`,
-      {
-        [`carbon-pod__header--${this.state.collapsed}`]: this.state.collapsed !== undefined
-      }
-    );
-  }
-
-  /**
-   * Classes for the content.
-   *
-   * @method contentClasses
-   * @return {String}
-   */
-  get contentClasses() {
-    return classNames(
-      'carbon-pod__content',
-      `carbon-pod__content--${this.props.as}`,
-      `carbon-pod__content--padding-${this.props.padding}`, {
-        'carbon-pod__content--footer': this.props.footer,
-        'carbon-pod--no-border': !this.props.border
-      }
-    );
-  }
-
-  /**
-   * Classes for the footer.
-   *
-   * @method footerClasses
-   * @return {String}
-   */
-  get footerClasses() {
-    return classNames(
-      'carbon-pod__footer',
-      `carbon-pod__footer--${this.props.as}`,
-      `carbon-pod__footer--padding-${this.props.padding}`, {
-        'carbon-pod--no-border': !this.props.border
-      }
-    );
-  }
-
-  /**
-   * Classes for the edit action.
-   *
-   * @method editActionClasses
-   * @return {String}
-   */
   get editActionClasses() {
     return classNames(
       'carbon-pod__edit-action',
       `carbon-pod__edit-action--${this.props.as}`,
-      `carbon-pod__edit-action--padding-${this.props.padding}`, {
+      `carbon-pod__edit-action--padding-${this.props.padding}`,
+      {
         'carbon-pod__edit-action--no-border': !this.props.border,
         'carbon-pod__display-on-hover': this.props.displayEditButtonOnHover
       }
     );
   }
 
-  /**
-   * Returns the footer component.
-   *
-   * @method footer
-   * @return {String}
-   */
-  get footer() {
-    if (!this.props.footer) { return null; }
-
-    return (
-      <div className={ this.footerClasses } data-element='footer'>
-        { this.props.footer }
-      </div>
-    );
-  }
-
-  /**
-   * Returns the edit action if defined.
-   *
-   * @method edit
-   * @return {Object} JSX
-   */
   get edit() {
-    if (!this.props.onEdit) { return null; }
+    if (!this.props.onEdit) {
+      return null;
+    }
 
     return (
-      <div className='carbon-pod__edit-button-container' { ...this.hoverOverEditEvents }>
-        <Link
-          icon='edit' className={ this.editActionClasses }
+      <StyledEditContainer
+        // className='carbon-pod__edit-button-container'
+        { ...this.hoverOverEditEvents }
+        internalEditButton={ this.props.internalEditButton }
+      >
+        <StyledEditAction
+          icon='edit'
+          // className={ this.editActionClasses }
+          podTheme={ this.props.as }
+          internalEditButton={ this.props.internalEditButton }
           { ...this.linkProps() }
+          padding={ this.props.padding }
+          noBorder={ !this.props.border }
+          displayOnlyOnHover={ this.props.displayEditButtonOnHover }
+          isHovered={ this.state.hoverEdit }
         >
           {I18n.t('actions.edit', { defaultValue: 'Edit' })}
-        </Link>
-      </div>
+        </StyledEditAction>
+      </StyledEditContainer>
     );
   }
 
-  /**
-   * Returns event related props for triggering and highlighting edit functionality
-   *
-   * @method linkProps
-   * @return {Object} props
-   */
   linkProps = () => {
     let props = {
       'data-element': 'edit'
@@ -380,14 +313,8 @@ class Pod extends React.Component {
     }
 
     return props;
-  }
+  };
 
-  /**
-   * Returns event related props for triggering and highlighting edit functionality
-   *
-   * @method hoverOverEditEvents
-   * @return {Object}
-   */
   get hoverOverEditEvents() {
     const props = {
       onMouseEnter: this.toggleHoverState.bind(this, true),
@@ -404,12 +331,6 @@ class Pod extends React.Component {
     return props;
   }
 
-  /**
-   * Determines if the content pod should share the editProps
-   *
-   * @method shouldContentHaveEditProps
-   * @return {Boolean}
-   */
   get shouldContentHaveEditProps() {
     return (this.props.triggerEditOnContent || this.props.displayEditButtonOnHover) && this.props.onEdit;
   }
@@ -425,59 +346,63 @@ class Pod extends React.Component {
       ev.preventDefault();
       this.props.onEdit(ev);
     }
-  }
+  };
 
-  /**
-   * Toggle the state of hovering the edit button.
-   *
-   * @method toggleHoverState
-   * @return {Void}
-   */
   toggleHoverState = (val) => {
     this.setState({ hoverEdit: val });
-  }
+  };
 
-  /**
-   * Renders the component.
-   *
-   * @method render
-   * @return {Object} JSX
-   */
   render() {
-    let content,
-        hoverOverEditEvents = {};
+    let content;
+    let hoverOverEditEvents = {};
 
     const { ...props } = validProps(this);
 
     delete props.className;
 
-    if (!this.state.collapsed) { content = this.podContent; }
+    if (!this.state.collapsed) {
+      content = this.podContent;
+    }
 
     if (this.shouldContentHaveEditProps) {
       hoverOverEditEvents = this.hoverOverEditEvents;
       hoverOverEditEvents.tabIndex = '0';
     }
 
-    if (!this.deprecatedWarnTriggered) {
-      this.deprecatedWarnTriggered = true;
-      warnOfDeprecation('Pod', '/components/tile and /components/card');
-    }
-
     return (
-      <div
-        className={ this.mainClasses } { ...props }
+      <StyledPod
+        className={ this.mainClasses }
+        { ...props }
+        internalEditButton={ this.props.internalEditButton }
+        isHovered={ this.state.hoverEdit }
         { ...tagComponent('pod', this.props) }
       >
-        <div className={ this.blockClasses } { ...hoverOverEditEvents }>
-          <div className={ this.contentClasses }>
-            { this.podHeader }
-            { content }
-          </div>
-          { this.footer }
-        </div>
+        <StyledBlock
+          className={ this.blockClasses }
+          podTheme={ this.props.as }
+          noBorder={ !this.props.border }
+          internalEditButton={ this.props.internalEditButton }
+          isHovered={ this.state.hoverEdit }
+          contentTriggersEdit={ this.shouldContentHaveEditProps }
+          editable={ this.props.onEdit }
+          fullWidth={ this.props.editContentFullWidth }
+          { ...hoverOverEditEvents }
+        >
+          <StyledContent
+            data-element='content'
+            className={ this.contentClasses }
+            padding={ this.props.padding }
+            hasFooter={ this.props.footer }
+            podTheme={ this.props.as }
+          >
+            {this.podHeader}
+            {content}
+          </StyledContent>
+          {this.footer}
+        </StyledBlock>
 
-        { this.edit }
-      </div>
+        {this.edit}
+      </StyledPod>
     );
   }
 }

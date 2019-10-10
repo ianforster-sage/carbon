@@ -5,8 +5,8 @@ import I18n from 'i18n-js';
 import ReactDOM from 'react-dom';
 import CSSTransitionGroup from 'react-transition-group/CSSTransitionGroup';
 import Pod from '../../__deprecated__/components/pod';
-import Form from '../../__deprecated__/components/form';
-import Link from '../link';
+import Form from '../../__experimental__/components/form';
+import Button from '../button';
 import Events from '../../utils/helpers/events';
 import { validProps } from '../../utils/ether';
 import tagComponent from '../../utils/helpers/tags';
@@ -250,12 +250,14 @@ class ShowEditPod extends React.Component {
    */
   get deleteButton() {
     return (
-      <Link
+      <Button
+        type='button'
         className='carbon-show-edit-pod__delete'
+        buttonType='tertiary'
         onClick={ this.props.onDelete }
       >
         { this.props.deleteText || I18n.t('actions.delete', { defaultValue: 'Delete' }) }
-      </Link>
+      </Button>
     );
   }
 
